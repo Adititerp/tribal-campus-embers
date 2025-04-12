@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { Role, UserData, Zone, GameState } from '../types/game';
 
@@ -64,6 +63,7 @@ const useGameStore = create<GameState>((set, get) => ({
       lastLoginDate: today,
       badges: [],
       visits: {},
+      visitImages: {},
       frozenEmberRelicEarned: false
     };
     
@@ -126,6 +126,42 @@ const useGameStore = create<GameState>((set, get) => ({
     return { success: true, message: `+10 Embers earned at ${zone}!` };
   },
   
+  logVisitWithImage: (zone: Zone, imageData: string) => {
+    const { user } = get();
+    
+    if (!user) {
+      return { success: false, message: 'Thou art not logged in!' };
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString();
+    
+    // Update user data
+    const updatedUser = { ...user };
+    
+    // Add image to visit history (even if already visited today)
+    if (!updatedUser.visitImages) {
+      updatedUser.visitImages = {};
+    }
+    
+    if (!updatedUser.visitImages[zone]) {
+      updatedUser.visitImages[zone] = [];
+    }
+    
+    // Add image with timestamp
+    updatedUser.visitImages[zone].push({
+      imageData,
+      timestamp,
+      date: today
+    });
+    
+    // Save updated user data
+    localStorage.setItem('emberQuestUser', JSON.stringify(updatedUser));
+    set({ user: updatedUser });
+    
+    return { success: true, message: `Visit to ${zone} documented!` };
+  },
+  
   hasVisitedToday: (zone: Zone) => {
     const { user } = get();
     if (!user) return false;
@@ -134,6 +170,13 @@ const useGameStore = create<GameState>((set, get) => ({
     const zoneVisit = user.visits[zone];
     
     return zoneVisit?.date === today && zoneVisit.rewarded;
+  },
+  
+  getVisitImages: (zone: Zone) => {
+    const { user } = get();
+    if (!user || !user.visitImages) return [];
+    
+    return user.visitImages[zone] || [];
   }
 }));
 
