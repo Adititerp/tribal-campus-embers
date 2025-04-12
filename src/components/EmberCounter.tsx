@@ -20,9 +20,11 @@ const EmberCounter = () => {
   }, [user?.emberPoints, counter]);
 
   return (
-    <div className={`ember-counter ${isAnimating ? 'animate-fire-pulse' : ''}`}>
+    <div 
+      className={`inline-flex items-center gap-1 bg-gradient-to-r from-amber-100 to-red-100 text-ember font-pixel px-3 py-2 rounded-full border border-ember shadow-sm hover:shadow-md transition-shadow ${isAnimating ? 'animate-fire-pulse' : ''}`}
+    >
       <Flame size={16} className="text-ember animate-fire-pulse" />
-      <span className="text-sm">{counter}</span>
+      <span className="text-sm bg-gradient-to-r from-orange-500 to-ember bg-clip-text text-transparent">{counter}</span>
     </div>
   );
 };

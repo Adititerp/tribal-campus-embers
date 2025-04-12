@@ -99,4 +99,9 @@
   .fire-base {
     @apply w-8 h-8 bg-ember rounded-full animate-fire-pulse;
   }
+  
+  .text-gradient {
+    @apply text-transparent bg-clip-text;
+  }
 }
+
