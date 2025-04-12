@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,26 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				ember: {
+					DEFAULT: '#FF4500',
+					light: '#FF7F50',
+					dark: '#CC3700'
+				},
+				stone: {
+					light: '#CCBFB3',
+					DEFAULT: '#A39A8F',
+					dark: '#7A736B'
+				},
+				dirt: {
+					light: '#9B7653',
+					DEFAULT: '#8B4513',
+					dark: '#5E2F0D'
+				},
+				leaf: {
+					light: '#90EE90',
+					DEFAULT: '#228B22',
+					dark: '#006400'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -70,25 +91,49 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'fire-pulse': {
+					'0%, 100%': { 
+						opacity: '1',
+						transform: 'scale(1)'
 					},
-					to: {
-						height: '0'
+					'50%': { 
+						opacity: '0.8',
+						transform: 'scale(1.05)'
 					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'walk': {
+					'0%': { transform: 'translateX(0) rotateY(0deg)' },
+					'25%': { transform: 'translateX(5px) rotateY(0deg)' },
+					'50%': { transform: 'translateX(10px) rotateY(0deg)' },
+					'51%': { transform: 'translateX(10px) rotateY(180deg)' },
+					'75%': { transform: 'translateX(5px) rotateY(180deg)' },
+					'100%': { transform: 'translateX(0) rotateY(180deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fire-pulse': 'fire-pulse 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'walk': 'walk 4s infinite alternate'
+			},
+			fontFamily: {
+				'pixel': ['"Press Start 2P"', 'cursive'],
+			},
+			boxShadow: {
+				'ember-glow': '0 0 15px #FF4500',
+				'stone': '0 2px 0 #7A736B',
 			}
 		}
 	},
