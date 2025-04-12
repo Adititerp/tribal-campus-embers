@@ -28,6 +28,7 @@ export interface UserData {
   visitImages?: {
     [zone in Zone]?: VisitImage[];
   };
+  profilePicture?: string; // Base64 encoded profile picture
   frozenEmberRelicEarned: boolean;
 }
 
@@ -41,4 +42,5 @@ export interface GameState {
   logVisitWithImage: (zone: Zone, imageData: string) => { success: boolean; message: string };
   hasVisitedToday: (zone: Zone) => boolean;
   getVisitImages: (zone: Zone) => VisitImage[];
+  updateProfilePicture: (imageData: string) => void;
 }

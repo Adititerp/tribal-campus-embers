@@ -37,6 +37,11 @@ const useGameStore = create<GameState>((set, get) => ({
         } else if (diffDays === 1) {
           // Increment streak if exactly 1 day has passed
           updatedUser.streakDays += 1;
+          
+          // Check if user has reached 100 days streak to unlock Frozen Ember Relic
+          if (updatedUser.streakDays >= 100 && !updatedUser.frozenEmberRelicEarned) {
+            updatedUser.frozenEmberRelicEarned = true;
+          }
         }
         
         // Update last login date
@@ -73,7 +78,13 @@ const useGameStore = create<GameState>((set, get) => ({
   },
 
   logout: () => {
-    set({ user: null, isAuthenticated: false });
+    // We're not deleting user data on logout anymore, just clearing the authentication
+    set({ isAuthenticated: false });
+    // Preserve the user data in sessionStorage as a backup
+    const userData = localStorage.getItem('emberQuestUser');
+    if (userData) {
+      sessionStorage.setItem('userDataBackup', userData);
+    }
   },
 
   logVisit: (zone: Zone) => {
@@ -112,12 +123,6 @@ const useGameStore = create<GameState>((set, get) => ({
       !updatedUser.badges.includes('Mighty Hunter')
     ) {
       updatedUser.badges.push('Mighty Hunter');
-    }
-    
-    // Check if user has earned the Frozen Ember Relic
-    const totalVisits = Object.keys(updatedUser.visits).length;
-    if (totalVisits >= 5 && !updatedUser.frozenEmberRelicEarned) {
-      updatedUser.frozenEmberRelicEarned = true;
     }
     
     // Save updated user data
@@ -178,6 +183,18 @@ const useGameStore = create<GameState>((set, get) => ({
     if (!user || !user.visitImages) return [];
     
     return user.visitImages[zone] || [];
+  },
+  
+  updateProfilePicture: (imageData: string) => {
+    const { user } = get();
+    
+    if (!user) return;
+    
+    const updatedUser = { ...user, profilePicture: imageData };
+    
+    // Save updated user data
+    localStorage.setItem('emberQuestUser', JSON.stringify(updatedUser));
+    set({ user: updatedUser });
   }
 }));
 

@@ -2,8 +2,12 @@
 import PageTitle from "@/components/PageTitle";
 import useGameStore from "@/store/gameStore";
 import FireAnimation from "@/components/FireAnimation";
-import { Award, Medal, Flame, User, Calendar, Trophy } from "lucide-react";
+import { Award, Medal, Flame, User, Calendar, Trophy, Camera, Upload } from "lucide-react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useState, useRef } from "react";
+import { toast } from "sonner";
 
 // Mock data for the leaderboard
 const mockLeaderboardData = [
@@ -15,7 +19,9 @@ const mockLeaderboardData = [
 ];
 
 const Leaderboard = () => {
-  const { user } = useGameStore();
+  const { user, updateProfilePicture } = useGameStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Combine mock data with the current user's data
   const leaderboardData = user 
@@ -37,6 +43,78 @@ const Leaderboard = () => {
       case 1: return "text-gray-400";
       case 2: return "text-amber-700";
       default: return "text-stone-500";
+    }
+  };
+  
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    
+    // Check file size
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+      toast.error("Image too large. Maximum size is 5MB.");
+      setIsUploading(false);
+      return;
+    }
+    
+    // Read file as data URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      updateProfilePicture(result);
+      toast.success("Profile picture updated!");
+      setIsUploading(false);
+    };
+    
+    reader.onerror = () => {
+      toast.error("Failed to read image file.");
+      setIsUploading(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
+  
+  const handleCaptureImage = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      
+      // Create video element to display the stream
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      
+      // Wait for video to be ready
+      await new Promise(resolve => {
+        video.onloadedmetadata = resolve;
+      });
+      
+      // Create canvas to capture the image
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw the video frame to the canvas
+      const context = canvas.getContext('2d');
+      context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Stop the video stream
+      stream.getTracks().forEach(track => track.stop());
+      
+      // Get the image data
+      const imageData = canvas.toDataURL('image/jpeg');
+      
+      // Update profile picture
+      updateProfilePicture(imageData);
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      console.error('Error capturing image:', error);
+      toast.error("Failed to capture image. Please check camera permissions.");
     }
   };
   
@@ -121,10 +199,55 @@ const Leaderboard = () => {
                 
                 <div className="p-6 space-y-6">
                   <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-200 flex items-center justify-center mb-2">
-                      <span className="font-pixel text-2xl text-amber-700">{user.role.charAt(0)}</span>
+                    <div 
+                      className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-200 flex items-center justify-center mb-2 overflow-hidden relative group cursor-pointer"
+                      onClick={handleProfilePictureClick}
+                    >
+                      {user.profilePicture ? (
+                        <Avatar className="w-full h-full">
+                          <AvatarImage src={user.profilePicture} />
+                          <AvatarFallback className="font-pixel text-2xl text-amber-700">
+                            {user.username[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <span className="font-pixel text-2xl text-amber-700">{user.role.charAt(0)}</span>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="bg-white/20 text-white p-1 rounded-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCaptureImage();
+                          }}
+                        >
+                          <Camera size={18} />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="bg-white/20 text-white p-1 rounded-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          <Upload size={18} />
+                        </Button>
+                      </div>
                     </div>
-                    <h4 className="font-pixel text-amber-800">{user.username}</h4>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <p className="text-xs text-muted-foreground">Click to update profile</p>
+                    <h4 className="font-pixel text-amber-800 mt-2">{user.username}</h4>
                     <p className="text-sm text-muted-foreground">{user.role}</p>
                   </div>
                   
@@ -139,15 +262,24 @@ const Leaderboard = () => {
                     
                     <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="text-ember" size={16} />
+                        <Calendar className="text-blue-500" size={16} />
                         <span className="text-sm font-medium text-amber-800">Current Streak</span>
                       </div>
                       <p className="font-pixel text-xl text-ember">{user.streakDays} days</p>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div 
+                          className="bg-gradient-to-r from-orange-300 via-ember to-red-500 h-2 rounded-full transition-all duration-500" 
+                          style={{ width: `${Math.min((user.streakDays / 100) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-right mt-1 text-muted-foreground">
+                        {user.streakDays >= 100 ? "Max streak!" : `${100 - user.streakDays} days to relic`}
+                      </p>
                     </div>
                     
                     <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                       <div className="flex items-center gap-2 mb-1">
-                        <Award className="text-ember" size={16} />
+                        <Award className="text-purple-500" size={16} />
                         <span className="text-sm font-medium text-amber-800">Badges Earned</span>
                       </div>
                       <p className="font-pixel text-xl text-ember">{user.badges.length}</p>
