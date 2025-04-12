@@ -6,13 +6,15 @@ interface PixelDinoProps {
   size?: "sm" | "md" | "lg";
   animated?: boolean;
   style?: CSSProperties;
+  className?: string; // Added className prop
 }
 
 const PixelDino = ({ 
   type = "dino", 
   size = "md", 
   animated = true,
-  style 
+  style,
+  className = "" // Default to empty string
 }: PixelDinoProps) => {
   const sizeClass = {
     sm: "w-8 h-8",
@@ -45,7 +47,7 @@ const PixelDino = ({
   
   return (
     <div 
-      className={`font-mono leading-none ${sizeClass[size]} ${animated ? 'animate-walk' : ''}`}
+      className={`font-mono leading-none ${sizeClass[size]} ${animated ? 'animate-walk' : ''} ${className}`}
       style={{ 
         ...style,
         fontFamily: 'monospace'
