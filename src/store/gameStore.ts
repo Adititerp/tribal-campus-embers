@@ -1,5 +1,6 @@
+
 import { create } from 'zustand';
-import { Role, UserData, Zone, GameState } from '../types/game';
+import { Role, UserData, Zone, GameState, VisitImage } from '../types/game';
 
 const useGameStore = create<GameState>((set, get) => ({
   user: null,
@@ -149,7 +150,7 @@ const useGameStore = create<GameState>((set, get) => ({
     }
     
     // Add image with timestamp
-    updatedUser.visitImages[zone].push({
+    updatedUser.visitImages[zone]?.push({
       imageData,
       timestamp,
       date: today

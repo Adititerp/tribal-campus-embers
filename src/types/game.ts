@@ -9,6 +9,12 @@ export interface Visit {
   image?: string; // Base64 encoded
 }
 
+export interface VisitImage {
+  imageData: string;
+  timestamp: string;
+  date: string;
+}
+
 export interface UserData {
   username: string;
   role: Role;
@@ -18,6 +24,9 @@ export interface UserData {
   badges: string[];
   visits: {
     [zone in Zone]?: Visit;
+  };
+  visitImages?: {
+    [zone in Zone]?: VisitImage[];
   };
   frozenEmberRelicEarned: boolean;
 }
@@ -29,5 +38,7 @@ export interface GameState {
   logout: () => void;
   loadUser: () => void;
   logVisit: (zone: Zone) => { success: boolean; message: string };
+  logVisitWithImage: (zone: Zone, imageData: string) => { success: boolean; message: string };
   hasVisitedToday: (zone: Zone) => boolean;
+  getVisitImages: (zone: Zone) => VisitImage[];
 }
